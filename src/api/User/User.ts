@@ -17,6 +17,10 @@ export const User = list({
       posts: relationship({
         ref: 'Post.author',
         many: true
+      }),
+      comments: relationship({
+        ref: 'Comment.author',
+        many: true
       })
     }
   })
