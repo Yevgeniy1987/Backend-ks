@@ -14,13 +14,12 @@ export const User = list({
       createdAt: timestamp({
         defaultValue: { kind: 'now' }
       }),
-      posts: relationship({
-        ref: 'Post.author',
-        many: true
-      }),
       comments: relationship({
+        many: true,
         ref: 'Comment.author',
-        many: true
+      }),
+      author: relationship({
+        ref: 'Author.user',
       })
     }
   })

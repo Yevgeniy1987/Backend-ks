@@ -17,7 +17,8 @@ model User {
   email     String    @unique @default("")
   password  String?
   createdAt DateTime? @default(now())
-  posts     Post[]    @relation("Post_author")
+  comments  Comment[] @relation("Comment_author")
+  author    Author?   @relation("Author_user")
 }
 
 model Post {
@@ -25,8 +26,40 @@ model Post {
   createdAt DateTime? @default(now())
   title     String    @default("")
   body      String    @default("")
-  author    User?     @relation("Post_author", fields: [authorId], references: [id])
+  likes     Int?      @default(0)
+  author    Author?   @relation("Post_author", fields: [authorId], references: [id])
   authorId  String?   @map("author")
+  comments  Comment[] @relation("Comment_post")
+  tags      Tag[]     @relation("Post_tags")
 
   @@index([authorId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  createdAt DateTime? @default(now())
+  body      String    @default("")
+  post      Post?     @relation("Comment_post", fields: [postId], references: [id])
+  postId    String?   @map("post")
+  author    User?     @relation("Comment_author", fields: [authorId], references: [id])
+  authorId  String?   @map("author")
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+model Author {
+  id        String    @id @default(cuid())
+  nickname  String    @default("")
+  createdAt DateTime? @default(now())
+  posts     Post[]    @relation("Post_author")
+  user      User?     @relation("Author_user", fields: [userId], references: [id])
+  userId    String?   @unique @map("user")
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  createdAt DateTime? @default(now())
+  name      String    @unique @default("")
+  posts     Post[]    @relation("Post_tags")
 }

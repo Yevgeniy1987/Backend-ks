@@ -2,18 +2,18 @@ import { list } from '@keystone-6/core';
 import { allowAll } from '@keystone-6/core/access';
 import { relationship, text, timestamp } from '@keystone-6/core/fields';
 
-export const Comment = list({
+export const Tag = list({
     access: allowAll,
     fields: {
         createdAt: timestamp({
             defaultValue: { kind: 'now' }
         }),
-        body: text(),
-        post: relationship({
-            ref: 'Post.comments',
+        name: text({
+            isIndexed: 'unique'
         }),
-        author: relationship({
-            ref: 'User.comments',
-        }),
+        posts: relationship({
+            many: true,
+            ref: 'Post.tags',
+        })
     }
   })

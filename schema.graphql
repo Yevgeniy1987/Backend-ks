@@ -7,8 +7,9 @@ type User {
   email: String
   password: PasswordState
   createdAt: DateTime
-  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
-  postsCount(where: PostWhereInput! = {}): Int
+  comments(where: CommentWhereInput! = {}, orderBy: [CommentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: CommentWhereUniqueInput): [Comment!]
+  commentsCount(where: CommentWhereInput! = {}): Int
+  author: Author
 }
 
 type PasswordState {
@@ -31,7 +32,8 @@ input UserWhereInput {
   email: StringFilter
   password: PasswordFilter
   createdAt: DateTimeNullableFilter
-  posts: PostManyRelationFilter
+  comments: CommentManyRelationFilter
+  author: AuthorWhereInput
 }
 
 input IDFilter {
@@ -88,10 +90,10 @@ input DateTimeNullableFilter {
   not: DateTimeNullableFilter
 }
 
-input PostManyRelationFilter {
-  every: PostWhereInput
-  some: PostWhereInput
-  none: PostWhereInput
+input CommentManyRelationFilter {
+  every: CommentWhereInput
+  some: CommentWhereInput
+  none: CommentWhereInput
 }
 
 input UserOrderByInput {
@@ -111,14 +113,21 @@ input UserUpdateInput {
   email: String
   password: String
   createdAt: DateTime
-  posts: PostRelateToManyForUpdateInput
+  comments: CommentRelateToManyForUpdateInput
+  author: AuthorRelateToOneForUpdateInput
 }
 
-input PostRelateToManyForUpdateInput {
-  disconnect: [PostWhereUniqueInput!]
-  set: [PostWhereUniqueInput!]
-  create: [PostCreateInput!]
-  connect: [PostWhereUniqueInput!]
+input CommentRelateToManyForUpdateInput {
+  disconnect: [CommentWhereUniqueInput!]
+  set: [CommentWhereUniqueInput!]
+  create: [CommentCreateInput!]
+  connect: [CommentWhereUniqueInput!]
+}
+
+input AuthorRelateToOneForUpdateInput {
+  create: AuthorCreateInput
+  connect: AuthorWhereUniqueInput
+  disconnect: Boolean
 }
 
 input UserUpdateArgs {
@@ -131,12 +140,18 @@ input UserCreateInput {
   email: String
   password: String
   createdAt: DateTime
-  posts: PostRelateToManyForCreateInput
+  comments: CommentRelateToManyForCreateInput
+  author: AuthorRelateToOneForCreateInput
 }
 
-input PostRelateToManyForCreateInput {
-  create: [PostCreateInput!]
-  connect: [PostWhereUniqueInput!]
+input CommentRelateToManyForCreateInput {
+  create: [CommentCreateInput!]
+  connect: [CommentWhereUniqueInput!]
+}
+
+input AuthorRelateToOneForCreateInput {
+  create: AuthorCreateInput
+  connect: AuthorWhereUniqueInput
 }
 
 type Post {
@@ -144,7 +159,12 @@ type Post {
   createdAt: DateTime
   title: String
   body: String
-  author: User
+  likes: Int
+  author: Author
+  comments(where: CommentWhereInput! = {}, orderBy: [CommentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: CommentWhereUniqueInput): [Comment!]
+  commentsCount(where: CommentWhereInput! = {}): Int
+  tags(where: TagWhereInput! = {}, orderBy: [TagOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TagWhereUniqueInput): [Tag!]
+  tagsCount(where: TagWhereInput! = {}): Int
 }
 
 input PostWhereUniqueInput {
@@ -159,7 +179,27 @@ input PostWhereInput {
   createdAt: DateTimeNullableFilter
   title: StringFilter
   body: StringFilter
-  author: UserWhereInput
+  likes: IntNullableFilter
+  author: AuthorWhereInput
+  comments: CommentManyRelationFilter
+  tags: TagManyRelationFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
+}
+
+input TagManyRelationFilter {
+  every: TagWhereInput
+  some: TagWhereInput
+  none: TagWhereInput
 }
 
 input PostOrderByInput {
@@ -167,19 +207,24 @@ input PostOrderByInput {
   createdAt: OrderDirection
   title: OrderDirection
   body: OrderDirection
+  likes: OrderDirection
 }
 
 input PostUpdateInput {
   createdAt: DateTime
   title: String
   body: String
-  author: UserRelateToOneForUpdateInput
+  likes: Int
+  author: AuthorRelateToOneForUpdateInput
+  comments: CommentRelateToManyForUpdateInput
+  tags: TagRelateToManyForUpdateInput
 }
 
-input UserRelateToOneForUpdateInput {
-  create: UserCreateInput
-  connect: UserWhereUniqueInput
-  disconnect: Boolean
+input TagRelateToManyForUpdateInput {
+  disconnect: [TagWhereUniqueInput!]
+  set: [TagWhereUniqueInput!]
+  create: [TagCreateInput!]
+  connect: [TagWhereUniqueInput!]
 }
 
 input PostUpdateArgs {
@@ -191,12 +236,198 @@ input PostCreateInput {
   createdAt: DateTime
   title: String
   body: String
+  likes: Int
+  author: AuthorRelateToOneForCreateInput
+  comments: CommentRelateToManyForCreateInput
+  tags: TagRelateToManyForCreateInput
+}
+
+input TagRelateToManyForCreateInput {
+  create: [TagCreateInput!]
+  connect: [TagWhereUniqueInput!]
+}
+
+type Comment {
+  id: ID!
+  createdAt: DateTime
+  body: String
+  post: Post
+  author: User
+}
+
+input CommentWhereUniqueInput {
+  id: ID
+}
+
+input CommentWhereInput {
+  AND: [CommentWhereInput!]
+  OR: [CommentWhereInput!]
+  NOT: [CommentWhereInput!]
+  id: IDFilter
+  createdAt: DateTimeNullableFilter
+  body: StringFilter
+  post: PostWhereInput
+  author: UserWhereInput
+}
+
+input CommentOrderByInput {
+  id: OrderDirection
+  createdAt: OrderDirection
+  body: OrderDirection
+}
+
+input CommentUpdateInput {
+  createdAt: DateTime
+  body: String
+  post: PostRelateToOneForUpdateInput
+  author: UserRelateToOneForUpdateInput
+}
+
+input PostRelateToOneForUpdateInput {
+  create: PostCreateInput
+  connect: PostWhereUniqueInput
+  disconnect: Boolean
+}
+
+input UserRelateToOneForUpdateInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
+  disconnect: Boolean
+}
+
+input CommentUpdateArgs {
+  where: CommentWhereUniqueInput!
+  data: CommentUpdateInput!
+}
+
+input CommentCreateInput {
+  createdAt: DateTime
+  body: String
+  post: PostRelateToOneForCreateInput
   author: UserRelateToOneForCreateInput
+}
+
+input PostRelateToOneForCreateInput {
+  create: PostCreateInput
+  connect: PostWhereUniqueInput
 }
 
 input UserRelateToOneForCreateInput {
   create: UserCreateInput
   connect: UserWhereUniqueInput
+}
+
+type Author {
+  id: ID!
+  nickname: String
+  createdAt: DateTime
+  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
+  postsCount(where: PostWhereInput! = {}): Int
+  user: User
+}
+
+input AuthorWhereUniqueInput {
+  id: ID
+}
+
+input AuthorWhereInput {
+  AND: [AuthorWhereInput!]
+  OR: [AuthorWhereInput!]
+  NOT: [AuthorWhereInput!]
+  id: IDFilter
+  nickname: StringFilter
+  createdAt: DateTimeNullableFilter
+  posts: PostManyRelationFilter
+  user: UserWhereInput
+}
+
+input PostManyRelationFilter {
+  every: PostWhereInput
+  some: PostWhereInput
+  none: PostWhereInput
+}
+
+input AuthorOrderByInput {
+  id: OrderDirection
+  nickname: OrderDirection
+  createdAt: OrderDirection
+}
+
+input AuthorUpdateInput {
+  nickname: String
+  createdAt: DateTime
+  posts: PostRelateToManyForUpdateInput
+  user: UserRelateToOneForUpdateInput
+}
+
+input PostRelateToManyForUpdateInput {
+  disconnect: [PostWhereUniqueInput!]
+  set: [PostWhereUniqueInput!]
+  create: [PostCreateInput!]
+  connect: [PostWhereUniqueInput!]
+}
+
+input AuthorUpdateArgs {
+  where: AuthorWhereUniqueInput!
+  data: AuthorUpdateInput!
+}
+
+input AuthorCreateInput {
+  nickname: String
+  createdAt: DateTime
+  posts: PostRelateToManyForCreateInput
+  user: UserRelateToOneForCreateInput
+}
+
+input PostRelateToManyForCreateInput {
+  create: [PostCreateInput!]
+  connect: [PostWhereUniqueInput!]
+}
+
+type Tag {
+  id: ID!
+  createdAt: DateTime
+  name: String
+  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
+  postsCount(where: PostWhereInput! = {}): Int
+}
+
+input TagWhereUniqueInput {
+  id: ID
+  name: String
+}
+
+input TagWhereInput {
+  AND: [TagWhereInput!]
+  OR: [TagWhereInput!]
+  NOT: [TagWhereInput!]
+  id: IDFilter
+  createdAt: DateTimeNullableFilter
+  name: StringFilter
+  posts: PostManyRelationFilter
+}
+
+input TagOrderByInput {
+  id: OrderDirection
+  createdAt: OrderDirection
+  name: OrderDirection
+}
+
+input TagUpdateInput {
+  createdAt: DateTime
+  name: String
+  posts: PostRelateToManyForUpdateInput
+}
+
+input TagUpdateArgs {
+  where: TagWhereUniqueInput!
+  data: TagUpdateInput!
+}
+
+input TagCreateInput {
+  createdAt: DateTime
+  name: String
+  posts: PostRelateToManyForCreateInput
 }
 
 """
@@ -217,6 +448,24 @@ type Mutation {
   updatePosts(data: [PostUpdateArgs!]!): [Post]
   deletePost(where: PostWhereUniqueInput!): Post
   deletePosts(where: [PostWhereUniqueInput!]!): [Post]
+  createComment(data: CommentCreateInput!): Comment
+  createComments(data: [CommentCreateInput!]!): [Comment]
+  updateComment(where: CommentWhereUniqueInput!, data: CommentUpdateInput!): Comment
+  updateComments(data: [CommentUpdateArgs!]!): [Comment]
+  deleteComment(where: CommentWhereUniqueInput!): Comment
+  deleteComments(where: [CommentWhereUniqueInput!]!): [Comment]
+  createAuthor(data: AuthorCreateInput!): Author
+  createAuthors(data: [AuthorCreateInput!]!): [Author]
+  updateAuthor(where: AuthorWhereUniqueInput!, data: AuthorUpdateInput!): Author
+  updateAuthors(data: [AuthorUpdateArgs!]!): [Author]
+  deleteAuthor(where: AuthorWhereUniqueInput!): Author
+  deleteAuthors(where: [AuthorWhereUniqueInput!]!): [Author]
+  createTag(data: TagCreateInput!): Tag
+  createTags(data: [TagCreateInput!]!): [Tag]
+  updateTag(where: TagWhereUniqueInput!, data: TagUpdateInput!): Tag
+  updateTags(data: [TagUpdateArgs!]!): [Tag]
+  deleteTag(where: TagWhereUniqueInput!): Tag
+  deleteTags(where: [TagWhereUniqueInput!]!): [Tag]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -246,6 +495,15 @@ type Query {
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   post(where: PostWhereUniqueInput!): Post
   postsCount(where: PostWhereInput! = {}): Int
+  comments(where: CommentWhereInput! = {}, orderBy: [CommentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: CommentWhereUniqueInput): [Comment!]
+  comment(where: CommentWhereUniqueInput!): Comment
+  commentsCount(where: CommentWhereInput! = {}): Int
+  authors(where: AuthorWhereInput! = {}, orderBy: [AuthorOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AuthorWhereUniqueInput): [Author!]
+  author(where: AuthorWhereUniqueInput!): Author
+  authorsCount(where: AuthorWhereInput! = {}): Int
+  tags(where: TagWhereInput! = {}, orderBy: [TagOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TagWhereUniqueInput): [Tag!]
+  tag(where: TagWhereUniqueInput!): Tag
+  tagsCount(where: TagWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }
